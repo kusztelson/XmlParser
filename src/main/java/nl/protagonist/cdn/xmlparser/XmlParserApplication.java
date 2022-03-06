@@ -1,6 +1,7 @@
 package nl.protagonist.cdn.xmlparser;
 
 import nl.protagonist.cdn.xmlparser.handlers.SalesHandler;
+import nl.protagonist.cdn.xmlparser.logic.ClientAmountLogic;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,11 +18,12 @@ public class XmlParserApplication {
         try {
 
             SAXParser saxParser = factory.newSAXParser();
+            ClientAmountLogic clientAmountLogic = new ClientAmountLogic("128");
 
-            SalesHandler handler = new SalesHandler();
+            SalesHandler handler = new SalesHandler(clientAmountLogic);
             saxParser.parse(FILENAME, handler);
 
-            System.out.println(handler.runningSum);
+            System.out.println(clientAmountLogic.getProcessedValue());
 
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();

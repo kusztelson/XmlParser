@@ -1,43 +1,41 @@
 package nl.protagonist.cdn.xmlparser.handlers;
 
+import nl.protagonist.cdn.xmlparser.logic.IHandlerLogic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 public class SalesHandler extends DefaultHandler {
-    private boolean clientFlag = false;
-    private StringBuilder currentValue = new StringBuilder();
-    public BigDecimal runningSum = new BigDecimal(BigInteger.ZERO);
+    private final StringBuilder _currentValue = new StringBuilder();
+    IHandlerLogic _logic;
+
+    public SalesHandler(IHandlerLogic _logic) {
+        this._logic = _logic;
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 
-        currentValue.setLength(0);
+        _currentValue.setLength(0);
 
-        if(qName.equalsIgnoreCase("client")) {
-            String id = attributes.getValue("id");
-            if("128".equals(id)) {
-                clientFlag = true;
-            }
+        if(qName.equalsIgnoreCase(_logic.getStartElementTag())) {
+            String attribute = attributes.getValue(_logic.getAttribute());
+            _logic.compareAttribute(attribute);
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (qName.equalsIgnoreCase("amount")) {
-            if(clientFlag) {
-                BigDecimal temp = new BigDecimal(currentValue.toString());
-                runningSum = runningSum.add(temp);
-                clientFlag = false;
+        if (qName.equalsIgnoreCase(_logic.getEndElementTag())) {
+            if(_logic.isAttributeMatching()) {
+                _logic.processCurrentValue(_currentValue.toString());
+                _logic.setAttributeMatching(false);
             }
         }
     }
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        currentValue.append(ch, start, length);
+        _currentValue.append(ch, start, length);
     }
 }
